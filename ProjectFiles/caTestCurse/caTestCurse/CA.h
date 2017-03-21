@@ -9,7 +9,6 @@
 #include "UI.h"
 #include <string>
 #include <vector>
-#include <mmsystem.h>
 
 
 class CA
