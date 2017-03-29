@@ -9,10 +9,23 @@
 #include "UI.h"
 #include <string>
 #include <vector>
+#include <Windows.h>
+#include <mmsystem.h>
+#include <iostream>
+
+#pragma comment(lib, "Winmm.lib")
 
 
 class CA
 {
+private:
+	// variable which is both an integer and an array of characters:
+	union { unsigned long word; unsigned char data[4]; } message;
+	int notestate = 0;  // keeping track of when the note is on or off
+	int velocity = 100; // MIDI note velocity parameter value
+	int midiport;       // select which MIDI output port to open
+	int flag;           // monitor the status of returning functions
+	HMIDIOUT device;    // MIDI device interface for sending MIDI output
 public:
 
 
@@ -40,6 +53,8 @@ public:
 	void playProp();
 
 	void exit();
+
+	void playNote(int note);
 
 	void stuff();
 

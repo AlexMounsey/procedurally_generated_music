@@ -176,7 +176,7 @@ void CA::playThree()
 
 	string binary = std::bitset<8>(stoi(patternCode)).to_string();
 	char *ruleSet = (char*)binary.c_str();
-	displayPattern(stoi(nLines), ruleSet, (char*)patternCode.c_str());
+	//displayPattern(stoi(nLines), ruleSet, (char*)patternCode.c_str());
 	playPattern(stoi(nLines), ruleSet, (char*)patternCode.c_str());
 	refreshBackground();
 	mainMenu();
@@ -221,17 +221,16 @@ void CA::genFive()
 
 void CA::displayPattern(int nSteps, char* ruleSet, char* patternCode)
 {
-	
+
 	int nCells = 120;
 
 	char *x = new char[nCells + 2];
 	char *x_old = new char[nCells + 2];
-	char *xNotes = new char[7];
-	xNotes[0] = 'C'; xNotes[1] = 'D'; xNotes[2] = 'E'; xNotes[3] = 'F'; xNotes[4] = 'G'; xNotes[5] = 'A'; xNotes[0] = 'B';
-	
 
 
-				   //resize the console window based on number of lines user asked to see
+
+
+	//resize the console window based on number of lines user asked to see
 	CACurse::resize_term(nSteps + 15, nCells + 6);
 
 	//title box that displays the code# and ruleset of the current pattern
@@ -274,7 +273,7 @@ void CA::displayPattern(int nSteps, char* ruleSet, char* patternCode)
 		for (int i = 0; i < nCells + 2; i++)
 		{
 			x_old[i] = x[i];
-			
+
 		}
 
 		for (int i = 1; i <= nCells; i++)
@@ -313,10 +312,6 @@ void CA::displayPattern(int nSteps, char* ruleSet, char* patternCode)
 			}
 
 
-			if (x[45] == '#')
-			{
-				//playNote(xNotes[0])
-			}
 
 
 
@@ -351,7 +346,7 @@ void CA::displayPattern(int nSteps, char* ruleSet, char* patternCode)
 		napms(10);
 		//////////////////////////////////////////////////******************************************/////////////////////////////
 	}
-	
+
 	//free memory
 	delete[] x;
 	delete[] x_old;
@@ -360,7 +355,7 @@ void CA::displayPattern(int nSteps, char* ruleSet, char* patternCode)
 	CACurse::mvprintw(LINES - 3, (COLS / 2) - 2, "BACK");
 	CACurse::attroff(A_BOLD | WA_BLINK | COLOR_PAIR(static_cast<int>(UI::Color::White_Black)));
 	CACurse::refresh();
-	
+
 	UI::hitEnter(patternWindow);
 	refreshBackground();
 	mainMenu();
@@ -368,11 +363,16 @@ void CA::displayPattern(int nSteps, char* ruleSet, char* patternCode)
 }
 
 void CA::playPattern(int nSteps, char* ruleSet, char* patternCode) {
-	int nCells = 10;
+	int nCells = 100;
+	flag = midiOutOpen(&device, midiport, 0, 0, CALLBACK_NULL);
+	if (flag != MMSYSERR_NOERROR) {
+		printf("Error opening MIDI Output.\n");
+	}
 
 	char *x = new char[nCells + 2];
 	char *x_old = new char[nCells + 2];
 	char *xNotes = new char[7];
+	xNotes[0] = 'C'; xNotes[1] = 'D'; xNotes[2] = 'E'; xNotes[3] = 'F'; xNotes[4] = 'G'; xNotes[5] = 'A'; xNotes[0] = 'B';
 
 	//resize the console window based on number of lines user asked to see
 	CACurse::resize_term(nSteps + 15, nCells + 6);
@@ -453,6 +453,41 @@ void CA::playPattern(int nSteps, char* ruleSet, char* patternCode) {
 				x[i] = ' ';
 			}
 
+			if (i == 45 && x[i] == '#')
+			{
+				playNote(60);
+			}
+			else if (i == 46 && x[i] == '#')
+			{
+				playNote(62);
+			}
+			else if (i == 47 && x[i] == '#')
+			{
+				playNote(64);
+			}
+			else if (i == 48 && x[i] == '#')
+			{
+				playNote(65);
+			}
+			else if (i == 49 && x[i] == '#')
+			{
+				playNote(67);
+			}
+			else if (i == 50 && x[i] == '#')
+			{
+				playNote(69);
+			}
+			else if (i == 51 && x[i] == '#')
+			{
+				playNote(71);
+			}
+			else if (i == 52 && x[i] == '#')
+			{
+				playNote(72);
+			}
+
+
+
 		}
 		x[0] = x[nCells];
 		x[nCells + 1] = x[1];
@@ -473,7 +508,7 @@ void CA::playPattern(int nSteps, char* ruleSet, char* patternCode) {
 		CACurse::wrefresh(patternWindow);
 
 		//pause thread for .25 seconds before printing next line
-		napms(250);
+		napms(25);
 	}
 
 	//free memory
@@ -527,6 +562,33 @@ int main(int argc, char *argv[])
 	CA::getInstance().start();
 
 	return 0;
+}
+
+void CA::playNote(int note)
+{
+
+
+	message.data[0] = 0x90;  // MIDI note-on message (requires to data bytes)
+	message.data[1] = note;    // MIDI note-on message: Key number (60 = middle C)
+	message.data[2] = 1000;   // MIDI note-on message: Key velocity (100 = loud)
+	message.data[3] = 0;     // Unused parameter
+
+							 // Assign the MIDI output port number (from input or default to 0)
+	midiport = 0;
+
+	flag = midiOutShortMsg(device, message.word);
+
+
+
+	// turn any MIDI notes currently playing:
+	midiOutReset(device);
+
+	// Remove any data in MIDI device and close the MIDI Output port
+	midiOutClose(device);
+
+
+
+
 }
 
 
