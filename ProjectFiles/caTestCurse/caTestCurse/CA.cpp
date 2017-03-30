@@ -364,6 +364,7 @@ void CA::displayPattern(int nSteps, char* ruleSet, char* patternCode)
 
 void CA::playPattern(int nSteps, char* ruleSet, char* patternCode) {
 	int nCells = 100;
+	midiport = 0;
 	flag = midiOutOpen(&device, midiport, 0, 0, CALLBACK_NULL);
 	if (flag != MMSYSERR_NOERROR) {
 		printf("Error opening MIDI Output.\n");
@@ -508,12 +509,18 @@ void CA::playPattern(int nSteps, char* ruleSet, char* patternCode) {
 		CACurse::wrefresh(patternWindow);
 
 		//pause thread for .25 seconds before printing next line
-		napms(25);
+		napms(150);
 	}
 
 	//free memory
 	delete[] x;
 	delete[] x_old;
+	// turn any MIDI notes currently playing:
+	midiOutReset(device);
+
+	// Remove any data in MIDI device and close the MIDI Output port
+	midiOutClose(device);
+
 
 	CACurse::attron(A_BOLD | WA_BLINK | COLOR_PAIR(static_cast<int>(UI::Color::White_Black)));
 	CACurse::mvprintw(LINES - 3, (COLS / 2) - 2, "BACK");
@@ -567,27 +574,13 @@ int main(int argc, char *argv[])
 void CA::playNote(int note)
 {
 
-
 	message.data[0] = 0x90;  // MIDI note-on message (requires to data bytes)
 	message.data[1] = note;    // MIDI note-on message: Key number (60 = middle C)
-	message.data[2] = 1000;   // MIDI note-on message: Key velocity (100 = loud)
+	message.data[2] = 100;   // MIDI note-on message: Key velocity (100 = loud)
 	message.data[3] = 0;     // Unused parameter
 
-							 // Assign the MIDI output port number (from input or default to 0)
-	midiport = 0;
 
 	flag = midiOutShortMsg(device, message.word);
-
-
-
-	// turn any MIDI notes currently playing:
-	midiOutReset(device);
-
-	// Remove any data in MIDI device and close the MIDI Output port
-	midiOutClose(device);
-
-
-
 
 }
 
