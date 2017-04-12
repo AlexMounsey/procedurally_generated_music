@@ -153,6 +153,14 @@ int CACurse::werase(WINDOW *win)
 	return ::werase(win);
 }
 
+
+int CACurse::wclear(WINDOW *win)
+{
+	return ::wclear(win);
+}
+
+
+
 int CACurse::wbkgd(WINDOW *win, chtype ch)
 {
 	return ::wbkgd(win, ch);

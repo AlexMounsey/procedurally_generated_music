@@ -21,15 +21,19 @@ class CA
 private:
 	// variable which is both an integer and an array of characters:
 	union { unsigned long word; unsigned char data[4]; } message;
-	int notestate = 0;  // keeping track of when the note is on or off
-	int velocity = 100; // MIDI note velocity parameter value
-	int midiport;       // select which MIDI output port to open
+	union { unsigned long word; unsigned char data[4]; } messageDrum;
+	int velocity; // MIDI note velocity parameter value
+	int midiport = 0;       // select which MIDI output port to open
 	int flag;           // monitor the status of returning functions
 	HMIDIOUT device;    // MIDI device interface for sending MIDI output
+	int key[7] = { 2,4,5,7,9,11,12 };
+	int Mj[7] = { 2,4,5,7,9,11,12 };		//positions of major
+	int Mn[7] = {2,1,2,2,1,3,1};		//positions of minor
+	bool rules[7]; //array of possible neighbor configurations
 public:
 
 
-	bool rules[7]; //array of possible neighbor configurations
+	
 	WINDOW *mainWindow;
 
 
@@ -42,11 +46,10 @@ public:
 	void refreshBackground();
 	void mainMenu();
 	void playThree();
-	void genThree();
-	void genFive();
-	void displayPattern(int nSteps, char* ruleSet, char* patternCode);
 
-	void playPattern(int nSteps, char * ruleSet, char * patternCode);
+	//void playPattern(int * emotVar, char * emot);
+
+	void playPattern(int nSteps, char * ruleSet, char * patternCode, int speed, char * emot);
 
 	void playFive();
 
@@ -54,9 +57,17 @@ public:
 
 	void exit();
 
-	void playNote(int note);
+	//void playNote(int note);
 
-	void stuff();
+	void playNote(int i, char x);
+
+	void playdrum(int note);
+
+	int displayChangeMenu();
+
+	int* emotValues(string emot);
+
+	void playEmot();
 
 
 

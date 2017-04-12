@@ -142,6 +142,28 @@ WINDOW* UI::titleBox()
 	return win;
 }
 
+
+
+
+int UI::showChoicesMenu(string title, char* menuItems[], int nMenuItems)
+{
+	int choice;
+	char* cTitle = (char*)title.c_str();
+
+	WINDOW *win = CACurse::newwin(15, 40, 14, (COLS / 2) - 20);
+	CACurse::wbkgd(win, COLOR_PAIR(static_cast<int>(UI::Color::Black_Green)));
+	CACurse::mvwprintw(win, 2, 15, cTitle);
+
+	choice = UI::navigationMenu(win, menuItems, nMenuItems);
+	//CACurse::wclear(win);
+	CACurse::werase(win);
+	return choice;
+
+
+}
+
+
+
 bool UI::popUpConfirm(char* choice)
 {
 	char *menuItems[] = {

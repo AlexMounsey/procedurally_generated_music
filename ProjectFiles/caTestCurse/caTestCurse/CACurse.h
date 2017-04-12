@@ -83,6 +83,8 @@ public:
 	// Clear the given window
 	static int werase(WINDOW *win);
 
+	static int wclear(WINDOW * win);
+
 
 	// Change the attributes of a window
 	static int wbkgd(WINDOW *win, chtype ch);

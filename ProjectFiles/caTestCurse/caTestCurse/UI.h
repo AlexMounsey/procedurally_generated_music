@@ -11,6 +11,7 @@ public:
 
 	static WINDOW* setUp(int scrHeight, int scrWidth);
 	static void loadColors();
+	static int showChoicesMenu(string title, char * menuItems[], int nMenuItems);
 	static bool popUpConfirm(char* choice);
 	static WINDOW* titleBox();
 	static WINDOW* messageFrame();
