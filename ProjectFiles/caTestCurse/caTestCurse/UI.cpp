@@ -41,7 +41,7 @@ string UI::showInputMessage(WINDOW* parentWindow, string title, string message)
 	CACurse::mvwprintwCentered(win, 6, "CONTINUE");
 	CACurse::wattroff(win, A_BOLD | WA_BLINK);
 
-	CACurse::mvwprintw(win, 1, 11, cMessage);
+	CACurse::mvwprintw(win, 1, 2, cMessage);
 	CACurse::mvwprintw(win, 3, 11, " ");
 	CACurse::wrefresh(win);
 
@@ -306,7 +306,7 @@ void UI::hitEnter(WINDOW *win)
 	int keyPress;
 	bool pressedEnter = false;
 
-	while (true)
+	while (CACurse::wgetch(win)!=10)
 	{
 		//pause for key input
 		keyPress = CACurse::wgetch(win);
