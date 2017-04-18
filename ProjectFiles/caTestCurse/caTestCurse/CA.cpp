@@ -82,7 +82,7 @@ void CA::welcomeScreen()
 }
 void CA::mainMenu()
 {
-	char *menuItems[] = {"PLAY Music","EXIT" };
+	char *menuItems[] = {"PLAY Music","Play Fully custom","EXIT" };
 	int choice = 0;
 
 	refreshBackground();
@@ -91,7 +91,7 @@ void CA::mainMenu()
 	CACurse::mvwprintw(titleBox, 2, 5, "CA Music Generator");
 	CACurse::wrefresh(titleBox);
 
-	choice = UI::showNavMenu(mainWindow, "-MAIN MENU-", menuItems, 2);
+	choice = UI::showNavMenu(mainWindow, "-MAIN MENU-", menuItems, 3);
 
 	if (UI::popUpConfirm(menuItems[choice - 1]))
 	{
@@ -101,6 +101,9 @@ void CA::mainMenu()
 			playEmot();
 			break;
 		case 2:
+			playCustom();
+			break;
+		case 3:
 			exit();
 			break;
 		}
@@ -119,8 +122,31 @@ void CA::playEmot()
 	emot = stoi(UI::showInputMessage(mainWindow, "Enter emotion", "Choose(1-4) 1=happy,2=sad,3=angry,4=fear"));
 	playPattern(CA::emotValues(emot));
 }
+void CA::playCustom()
+{
+	string speed, patternCustom, key, velocity, scale;
 
+	speed =UI::showInputMessage(mainWindow, "Enter speed", "Please enter speed, 50=fast 250=slow: ");
+	patternCustom =UI::showInputMessage(mainWindow, "Enter Pattern Code", "Please enter pattern number (0-255):");
+	key =UI::showInputMessage(mainWindow, "Enter Key", "Enter starting Key(24-107) e.g midC=60:");
+	velocity = UI::showInputMessage(mainWindow, "Enter velocity", "Enter velocity(how hard keys are hit)(0-100):");
+	scale = UI::showInputMessage(mainWindow, "Enter Scale", "Major=0 or Minor=1");
 
+	if (patternCustom == "" || speed == "" || key == "" || velocity == ""  || scale == "")
+	{
+		UI::showMessage(mainWindow, "error", "Parameter missing, using defaults");
+		speed = "190";
+		patternCustom = "2345";
+		key = "60";
+		velocity = "75";
+		scale = "0";
+	}
+	//{patternCode,emotion,tempo,key,velocity,major/minor(1/0)}
+	vector<int> emotVars = { stoi(patternCustom),5,stoi(speed),stoi(key),stoi(velocity),stoi(scale) };
+	playPattern(emotVars);
+	refreshBackground();
+	mainMenu();
+}
 void CA::playPattern(vector<int> emotVars) {
 
 	int nCells = 100, choice = 0, nSteps = 100;
@@ -136,7 +162,6 @@ void CA::playPattern(vector<int> emotVars) {
 	char *x = new char[nCells + 2];
 	char *x_old = new char[nCells + 2];
 	char *x_older = new char[nCells + 2];
-	//cMj[0] = 'C'; xNotes[1] = 'D'; xNotes[2] = 'E'; xNotes[3] = 'F'; xNotes[4] = 'G'; xNotes[5] = 'A'; xNotes[0] = 'B';
 	//resize the console window based on number of lines user asked to see
 	CACurse::resize_term(40, 90);
 	//title box that displays the code# and ruleset of the current pattern
@@ -228,15 +253,16 @@ void CA::playPattern(vector<int> emotVars) {
 					break;
 
 				case 2:
-					speed = stoi(UI::showInputMessage(patternWindow, "Enter Speed", "Choose Speed, <75=fast, >200=slow "));
+					UI::showMessage(patternWindow, "Change pattern Code", "Change pattern Code ");
+					patternCode = genPattern();
 					break;
 
 				case 3:
-					//UI::hitEnter(patternWindow);
-					refreshBackground();
-					mainMenu();
+					nSteps = 10;
 					break;
 				}
+
+				//redraw window to clear popups
 				disppp = to_string(patternCode);
 				dispat = disppp.c_str();
 				CACurse::resize_term(40, 90);
@@ -244,12 +270,7 @@ void CA::playPattern(vector<int> emotVars) {
 				CACurse::mvwprintw(patternTitle, 1, 16, "%s", dispat);
 				CACurse::wrefresh(patternTitle);
 		}
-			else if(CACurse::wgetch(patternWindow) == 10)
-			{
-
-				break;
-
-			}
+			
 
 
 		playNote(i, x[i], key, velocity,scale); // checks if cell is alive and plays a note
@@ -257,6 +278,7 @@ void CA::playPattern(vector<int> emotVars) {
 		x[nCells + 1] = x[1];
 		}
 		napms(speed);
+
 	}
 	//free memory
 	delete[] x;
@@ -283,7 +305,6 @@ void CA::exit()
 int main(int argc, char *argv[])
 {
 	CA::getInstance().start();
-
 	return 0;
 }
 void CA::playNote(int i,char x,int startNote, int velocity,int scale)
@@ -293,6 +314,13 @@ void CA::playNote(int i,char x,int startNote, int velocity,int scale)
 	message.data[2] = velocity;   // MIDI note-on message: Key velocity (100 = loud)
 	message.data[3] = 0;     // Unused parameter
 
+	if (scale == 1)//setting minor of major scales
+	{
+		memcpy(key, Mn, sizeof(key));
+	}
+	else {
+		memcpy(key, Mj, sizeof(key));
+	}
 	int keyNote = startNote;
 	//checks if cell is alive then plays midi
 	if (i == 45 && x == '#')
@@ -356,7 +384,7 @@ void CA::playdrum(int note)
 
 int CA::displayChangeMenu()
 {
-	char *menuItems[] = { "Change Emotion", "Change Speed", "Change Volume"};
+	char *menuItems[] = { "Change Emotion", "Change CA Pattern", "Exit"};
 	int choice = 0;
 	choice = UI::showChoicesMenu("Changes", menuItems, 3);
 	CACurse::wrefresh(mainWindow);
@@ -364,34 +392,40 @@ int CA::displayChangeMenu()
 }
 
 
-vector<int> CA::emotValues(int emot)
+int CA::genPattern()
 {
-	srand(time(NULL));
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<int> dis(0, 65535);
-	int c=48,cS=49,d=50,dS=50,e=64,f=65,fS=42,g=43,gS=44,a=45,aS=46,b=35;// setting lowest octave for all notes, B is one lowest for anger
-//C	C#	D	D#	E	F	F#	G	G#	A	A#	B
 
+	return dis(gen);
+}
 
-
-	vector<int> emotVars = {22,1,200,c,0};//{patternCode,emotion,tempo,key,velocity,major/minor(1/0)}
+vector<int> CA::emotValues(int emot)
+{
+	srand(time(NULL));
+		int c = 36, cS = 37, d = 38, dS = 39, e = 88, f = 41, fS = 42, g = 43, gS = 44, a = 45, aS = 46, b = 35;// setting lowest octave for all notes, B is one lowest for anger
+	vector<int> emotVars = { 22,1,200,c,0 };//{patternCode,emotion,tempo,key,velocity,major/minor(1/0)}
 
 	if (emot == 1)//happy
 	{
-		emotVars = {dis(gen),1,rand() % 200 +50,e,50,1};
+		e += 12 * (rand() % 5);
+		emotVars = { genPattern(),1,rand() % 200 + 50,e,50,1 };
 	}
 	else if (emot == 2)//sad
 	{
-		emotVars = {dis(gen),2,rand() % 50 +250,f,50,0 };
+		f += 12 * (rand() % 5);
+		emotVars = { genPattern(),2,rand() % 50 + 250,f,50,0 };
 	}
 	else if (emot ==3)//angry
 	{
-		emotVars = {dis(gen),3,rand() % 150 + 100,b,75,1};
+		b += 12 * (rand() % 3);
+		emotVars = { genPattern(),3,rand() % 150 + 100,b,75,1 };
 	}
 	else if (emot == 4)//fear
 	{
-		emotVars = {dis(gen),4,rand() % 150 + 100,dS,75,0};
+		dS += 12 * (rand() % 5);
+		emotVars = { genPattern(),4,rand() % 150 + 100,dS,75,0 };
 	}
 
 	return emotVars;

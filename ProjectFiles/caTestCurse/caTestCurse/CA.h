@@ -47,6 +47,8 @@ public:
 	void refreshBackground();
 	void mainMenu();
 
+	void playCustom();
+
 	/*
 
 	void playPattern(int nSteps, char * ruleSet, char * patternCode, int speed, char * emot);
@@ -59,6 +61,8 @@ public:
 	void playdrum(int note);
 
 	int displayChangeMenu();
+
+	int genPattern();
 
 	vector<int> emotValues(int emot);
 
