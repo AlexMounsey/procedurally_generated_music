@@ -174,11 +174,13 @@ void CA::playPattern(vector<int> emotVars) {
 	string x_old(nCells + 2, ' ');
 	string x_older(nCells + 2, ' ');
 	//creates lvlOfCheck number of previous lines to be used in monitor
-	string check(nCells + 2, ' ');
-	vector<string> checkers;
+	string check(7, ' ');
+	vector<string> check1;
+	vector<string> check2;
 	for (int i = 0; i < lvlOfCheck; i++)
 	{
-		checkers.push_back(check);
+		check1.push_back(check);
+		check2.push_back(check);
 	}
 	//resize the console window based on number of lines user asked to see
 	CACurse::resize_term(40, 90);
@@ -199,17 +201,18 @@ void CA::playPattern(vector<int> emotVars) {
 	//repeat for each row user asked for
 	for (int j = 1; j <= nSteps; j++)
 	{
-		//checkers[0] = x_old;
+		check2 = check1;
+		check1[0] = x_old.substr(startCell,7);
 		x_older = x_old;
 		x_old = x;
 
-		////every 10 steps update checker array if the 
-		//for (int i = lvlOfCheck; i > 1; i--)
-		//{
-		//	checkers[i] = checkers[i - 1];
-		//}
-		//
-
+		// update checker
+		for (int i = lvlOfCheck-1; i >= 1; --i)
+		{
+			check1[i] = check1[i - 1];
+		}
+		
+		
 		for (int i = 1; i <= nCells; i++)
 		{
 			
@@ -287,19 +290,26 @@ void CA::playPattern(vector<int> emotVars) {
 				CACurse::wrefresh(patternTitle);
 			}
 
-			//if (checker(i, x.at(i), x_checker.at(i)))
-			//{
-			//	patternCode = genPattern();
-			//	//redraw window to clear popups
-			//	disppp = to_string(patternCode);
-			//	dispat = disppp.c_str();
-			//	CACurse::resize_term(40, 90);
-			//	patternTitle = UI::titleBox();
-			//	CACurse::mvwprintw(patternTitle, 1, 16, "%s", dispat);
-			//	CACurse::wrefresh(patternTitle);
-			//}
+			if ((std::adjacent_find(check1.begin(), check1.end(), std::not_equal_to<string>()) == check1.end()) || (check1 == check2))
+			{
+				patternCode = genPattern();
+				//redraw window to clear popups
+				disppp = to_string(patternCode);
+				dispat = disppp.c_str();
+				CACurse::resize_term(40, 90);
+				patternTitle = UI::titleBox();
+				CACurse::mvwprintw(patternTitle, 1, 16, "%s", dispat);
+				CACurse::wrefresh(patternTitle);
+			}
 
-		playNote(i, x.at(i), key, velocity,scale,emot); // checks if cell is alive and plays a note
+			playNote(i, x.at(i), key, velocity,scale,emot); // checks if cell is alive and plays a note
+
+			//////visualisation for testing, uncomment to see first 15 line of pattern
+			//for (int i = 1; i <= nCells; i++)
+			//{
+			//	CACurse::mvwprintw(patternWindow, j + 1, i, "%c", x[i]);
+
+			//}
 		}
 
 		napms(speed);
@@ -326,7 +336,7 @@ void CA::playNote(int i,char x,int startNote, int velocity,int scale,int emot)
 	message.data[2] = velocity;   // MIDI note-on message: Key velocity (100 = loud)
 	message.data[3] = 0;     // Unused parameter
 
-	if (scale == 1)//setting minor of major scales
+	if (scale == 0)//setting minor of major scales
 	{
 		memcpy(key, Mn, sizeof(key));
 	}
@@ -335,22 +345,21 @@ void CA::playNote(int i,char x,int startNote, int velocity,int scale,int emot)
 	}
 	int keyNote = startNote;
 	//checks if cell is alive then plays midi
-	if (i == 45 && x == '#')
+	if (i == startCell && x == '#')
 	{
 		//setting note to play
-		message.data[1] =keyNote;
+		message.data[1] = keyNote;
 		//plaing the midi
 		flag = midiOutShortMsg(device, message.word);
 	}
-
 	else {
-		for (int j = 0; j < 6; j++)
+		for (int j = 0; j < 7; j++)
 		{
-			if (i == 46 + j && x == '#'&& emot !=2) {
+			if (i == startCell+1 + j && x == '#'&& emot !=2) {
 				message.data[1] = keyNote + key[j];
 				flag = midiOutShortMsg(device, message.word);
 			}
-			else if (i == 46 + j && x == '#'&& emot == 2 && i % 2==0 )
+			else if (i == startCell+1 + j && x == '#'&& emot == 2 && i % 2==0 )
 			{
 				message.data[1] = keyNote + key[j];
 				flag = midiOutShortMsg(device, message.word);
@@ -382,8 +391,8 @@ vector<int> CA::emotValues(int emot)
 
 	if (emot == 1)//happy
 	{
-		e += 12 * (rand() % 4+1);
-		emotVars = { genPattern(),1,rand() % 150 + 75,e,50,1 };
+		e += 12 * (3);
+		emotVars = { genPattern(),1,rand() % 150 + 150,e,30,1 };
 	}
 	else if (emot == 2)//sad
 	{
@@ -404,38 +413,7 @@ vector<int> CA::emotValues(int emot)
 	return emotVars;
 
 }
-bool CA::monitor(int i, char x, char xOld)
-{
 
-	for (int j = 0; j < 7; j++)
-	{
-		if (i == 45 + j  && x == '#' && xOld == '#') //if all cells are full
-		{
-			fullCounter++;
-		}
-		else if ((i == 45 + j  && x == ' ' && xOld == ' '))
-		{
-			emptyCounter++;
-
-		}
-
-	}
-	if (emptyCounter == 7) {
-		emptyCounter = 0;
-		return true;
-
-	}
-	else if (fullCounter == 7)
-	{
-		fullCounter = 0;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-
-}
 
 
 
