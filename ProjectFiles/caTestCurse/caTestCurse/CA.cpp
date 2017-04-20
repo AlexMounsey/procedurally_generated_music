@@ -160,7 +160,7 @@ void CA::playCustom()
 }
 void CA::playPattern(vector<int> emotVars) {
 
-	int nCells = 100, choice = 0, nSteps = 100;
+	int nCells = 100, choice = 0, nSteps = 1000;
 	int patternCode = emotVars[0], emot = emotVars[1], speed = emotVars[2], key = emotVars[3], velocity = emotVars[4], scale = emotVars[5];
 	string disppp = to_string(patternCode);
 	string ruleSet = bitset<16>(patternCode).to_string();
@@ -260,11 +260,17 @@ void CA::playPattern(vector<int> emotVars) {
 			if (CACurse::wgetch(patternWindow) != ERR  && CACurse::wgetch(patternWindow) != 10)
 			{
 				choice = displayChangeMenu();
-
+				string g;
 				switch (choice)
 				{
 				case 1:
-					emot = stoi(UI::showInputMessage(patternWindow, "Enter emotion", "Choose(1-4) 1=happy,2=sad,3=angry,4=fear"));
+					g = UI::showInputMessage(patternWindow, "Enter emotion", "Choose(1-4) 1=happy,2=sad,3=angry,4=fear");
+					if (g == "")
+					{
+						g = to_string(rand() % 4 + 1);
+					}
+					emot = stoi(g);
+					
 					emotVars=emotValues(emot);
 					patternCode = emotVars[0], speed = emotVars[2], key = emotVars[3], velocity = emotVars[4], scale = emotVars[5];
 					nSteps += 100;
@@ -391,13 +397,13 @@ vector<int> CA::emotValues(int emot)
 
 	if (emot == 1)//happy
 	{
-		e += 12 * (3);
+		e += 12 * (2);
 		emotVars = { genPattern(),1,rand() % 150 + 150,e,30,1 };
 	}
 	else if (emot == 2)//sad
 	{
 		f += 12 * (rand() % 4);
-		emotVars = { genPattern(),2,rand() % 50 + 300,f,30,0 };
+		emotVars = { genPattern(),2,rand() % 150 + 400,f,30,0 };
 	}
 	else if (emot ==3)//angry
 	{

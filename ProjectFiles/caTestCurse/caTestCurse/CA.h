@@ -36,7 +36,7 @@ private:
 	int key[7] = { 2,4,5,7,9,11,12 };
 	const int Mj[7] = { 2,4,5,7,9,11,12};		//positions of major
 	const int Mn[7] = {2,3,5,7,8,11,12};		//positions of minor
-	const int lvlOfCheck = 3;
+	const int lvlOfCheck = 5;
 	const int startCell = 45;
 	bool rules[15]; //array of possible neighbor configurations
 public:
