@@ -8,6 +8,8 @@
 #include "CACurse.h"
 #include "UI.h"
 #include <string>
+#include <bitset>
+#include <string>
 #include <time.h> 
 #include <random>
 #include <vector>
@@ -26,19 +28,17 @@ class CA
 {
 private:
 	// variable which is both an integer and an array of characters:
-	union { unsigned long word; unsigned char data[4]; } message;
+	union { unsigned long word; unsigned char data[4]; } m_message;
 	union { unsigned long word; unsigned char data[4]; } messageDrum;
 	int midiport = 0;       // select which MIDI output port to open
-	int flag;           // monitor the status of returning functions
+	int m_flag;           // monitor the status of returning functions
 	HMIDIOUT device;    // MIDI device interface for sending MIDI output
-	int fullCounter = 0;
-	int emptyCounter = 0;
 	int key[7] = { 2,4,5,7,9,11,12 };
 	const int Mj[7] = { 2,4,5,7,9,11,12};		//positions of major
 	const int Mn[7] = {2,3,5,7,8,11,12};		//positions of minor
-	const int lvlOfCheck = 5;
-	const int startCell = 45;
-	bool rules[15]; //array of possible neighbor configurations
+	const int m_lvlOfCheck = 5;
+	const int m_startCell = 45;
+	bool m_rules[15]; //array of possible neighbor configurations
 public:
 	WINDOW *mainWindow;
 	static CA& getInstance();

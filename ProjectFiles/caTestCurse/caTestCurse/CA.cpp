@@ -1,12 +1,5 @@
-
-
-
 using namespace std;
-
 #include "CA.h"
-#include <string>
-#include <bitset>
-
 CA::~CA()
 {
 	//CACurse::endwin();
@@ -30,15 +23,10 @@ void CA::refreshBackground()
 {
 	CACurse::resize_term(40, 90);
 	CACurse::delwin(mainWindow);
-
 	mainWindow = CACurse::newwin(LINES, COLS, 0, 0);
 	CACurse::wbkgd(mainWindow, COLOR_PAIR(static_cast<int>(UI::Color::Black_Black)));
-
 	CACurse::wattron(mainWindow, A_BOLD | COLOR_PAIR(static_cast<int>(UI::Color::Black_Black)));
 	CACurse::wattroff(mainWindow, A_BOLD | COLOR_PAIR(static_cast<int>(UI::Color::Black_Black)));
-
-
-
 	CACurse::wrefresh(mainWindow);
 }
 void CA::start()
@@ -77,10 +65,8 @@ void CA::welcomeScreen()
 		mainMenu();
 		CACurse::flash();
 		return;
-
 	}
 }
-
 void CA::exit()
 {
 	UI::showMessage(mainWindow, "Bye", ":)");
@@ -95,13 +81,10 @@ void CA::mainMenu()
 {
 	char *menuItems[] = {"PLAY Music","Play Fully custom","EXIT" };
 	int choice = 0;
-
 	refreshBackground();
-
 	WINDOW* titleBox = UI::titleBox();
 	CACurse::mvwprintw(titleBox, 2, 5, "CA Music Generator");
 	CACurse::wrefresh(titleBox);
-
 	choice = UI::showNavMenu(mainWindow, "-MAIN MENU-", menuItems, 3);
 
 	if (UI::popUpConfirm(menuItems[choice - 1]))
@@ -130,7 +113,7 @@ void CA::playEmot()
 	int emot;
 	/*string binary = std::bitset<8>(stoi(patternCode)).to_string();
 	char *ruleSet = (char*)binary.c_str();*/
-	emot = stoi(UI::showInputMessage(mainWindow, "Enter emotion", "Choose(1-4) 1=happy,2=sad,3=angry,4=fear"));
+	emot = stoi(UI::showInputMessage(mainWindow, "Enter emotion", "Choose(1-4) 1=Joy, 2=Sadness, 3=Anger, 4=Fear/Suspense"));
 	playPattern(CA::emotValues(emot));
 }
 void CA::playCustom()
@@ -165,8 +148,8 @@ void CA::playPattern(vector<int> emotVars) {
 	string disppp = to_string(patternCode);
 	string ruleSet = bitset<16>(patternCode).to_string();
 	const char *dispat = disppp.c_str();
-	flag = midiOutOpen(&device, midiport, 0, 0, CALLBACK_NULL);
-	if (flag != MMSYSERR_NOERROR) {
+	m_flag = midiOutOpen(&device, midiport, 0, 0, CALLBACK_NULL);
+	if (m_flag != MMSYSERR_NOERROR) {
 		printf("Error opening MIDI Output.\n");
 	}
 
@@ -177,7 +160,7 @@ void CA::playPattern(vector<int> emotVars) {
 	string check(7, ' ');
 	vector<string> check1;
 	vector<string> check2;
-	for (int i = 0; i < lvlOfCheck; i++)
+	for (int i = 0; i < m_lvlOfCheck; i++)
 	{
 		check1.push_back(check);
 		check2.push_back(check);
@@ -202,51 +185,49 @@ void CA::playPattern(vector<int> emotVars) {
 	for (int j = 1; j <= nSteps; j++)
 	{
 		check2 = check1;
-		check1[0] = x_old.substr(startCell,7);
+		check1[0] = x_old.substr(m_startCell,7);
 		x_older = x_old;
 		x_old = x;
 
 		// update checker
-		for (int i = lvlOfCheck-1; i >= 1; --i)
+		for (int i = m_lvlOfCheck-1; i >= 1; --i)
 		{
 			check1[i] = check1[i - 1];
 		}
-		
-		
+
 		for (int i = 1; i <= nCells; i++)
 		{
 			
 			ruleSet = std::bitset<16>(patternCode).to_string();
 
 			//define each possible rule in the neighborhood
-			rules[15] = (x_old[i - 1] == ' ' && x_old.at(i) == ' ' && x_old[i + 1] == ' ' && x_older.at(i) == ' ');
-			rules[14] = (x_old[i - 1] == '#' && x_old.at(i) == ' ' && x_old[i + 1] == ' ' && x_older.at(i) == ' ');
-			rules[13] = (x_old[i - 1] == ' ' && x_old.at(i) == '#' && x_old[i + 1] == ' ' && x_older.at(i) == ' ');
-			rules[12] = (x_old[i - 1] == ' ' && x_old.at(i) == ' ' && x_old[i + 1] == '#' && x_older.at(i) == ' ');
-			rules[11] = (x_old[i - 1] == ' ' && x_old.at(i) == ' ' && x_old[i + 1] == ' ' && x_older.at(i) == '#');
-			rules[10] = (x_old[i - 1] == '#' && x_old.at(i) == '#' && x_old[i + 1] == ' ' && x_older.at(i) == ' ');//
-			rules[9] = (x_old[i - 1] == '#' && x_old.at(i) == ' ' && x_old[i + 1] == '#' && x_older.at(i) == ' ');//
-			rules[8] = (x_old[i - 1] == '#' && x_old.at(i) == ' ' && x_old[i + 1] == ' ' && x_older.at(i) == '#');//
-			rules[7] = (x_old[i - 1] == ' ' && x_old.at(i) == '#' && x_old[i + 1] == '#' && x_older.at(i) == ' ');//
-			rules[6] = (x_old[i - 1] == ' ' && x_old.at(i) == '#' && x_old[i + 1] == ' ' && x_older.at(i) == '#');//
-			rules[5] = (x_old[i - 1] == ' ' && x_old.at(i) == ' ' && x_old[i + 1] == '#' && x_older.at(i) == '#');//
-			rules[4] = (x_old[i - 1] == '#' && x_old.at(i) == '#' && x_old[i + 1] == '#' && x_older.at(i) == ' ');//
-			rules[3] = (x_old[i - 1] == '#' && x_old.at(i) == ' ' && x_old[i + 1] == '#' && x_older.at(i) == '#');
-			rules[2] = (x_old[i - 1] == '#' && x_old.at(i) == '#' && x_old[i + 1] == ' ' && x_older.at(i) == '#');
-			rules[1] = (x_old[i - 1] == ' ' && x_old.at(i) == '#' && x_old[i + 1] == '#' && x_older.at(i) == '#');
-			rules[0] = (x_old[i - 1] == '#' && x_old.at(i) == '#' && x_old[i + 1] == '#' && x_older.at(i) == '#');
+			m_rules[15] = (x_old[i - 1] == ' ' && x_old.at(i) == ' ' && x_old[i + 1] == ' ' && x_older.at(i) == ' ');
+			m_rules[14] = (x_old[i - 1] == '#' && x_old.at(i) == ' ' && x_old[i + 1] == ' ' && x_older.at(i) == ' ');
+			m_rules[13] = (x_old[i - 1] == ' ' && x_old.at(i) == '#' && x_old[i + 1] == ' ' && x_older.at(i) == ' ');
+			m_rules[12] = (x_old[i - 1] == ' ' && x_old.at(i) == ' ' && x_old[i + 1] == '#' && x_older.at(i) == ' ');
+			m_rules[11] = (x_old[i - 1] == ' ' && x_old.at(i) == ' ' && x_old[i + 1] == ' ' && x_older.at(i) == '#');
+			m_rules[10] = (x_old[i - 1] == '#' && x_old.at(i) == '#' && x_old[i + 1] == ' ' && x_older.at(i) == ' ');//
+			m_rules[9] = (x_old[i - 1] == '#' && x_old.at(i) == ' ' && x_old[i + 1] == '#' && x_older.at(i) == ' ');//
+			m_rules[8] = (x_old[i - 1] == '#' && x_old.at(i) == ' ' && x_old[i + 1] == ' ' && x_older.at(i) == '#');//
+			m_rules[7] = (x_old[i - 1] == ' ' && x_old.at(i) == '#' && x_old[i + 1] == '#' && x_older.at(i) == ' ');//
+			m_rules[6] = (x_old[i - 1] == ' ' && x_old.at(i) == '#' && x_old[i + 1] == ' ' && x_older.at(i) == '#');//
+			m_rules[5] = (x_old[i - 1] == ' ' && x_old.at(i) == ' ' && x_old[i + 1] == '#' && x_older.at(i) == '#');//
+			m_rules[4] = (x_old[i - 1] == '#' && x_old.at(i) == '#' && x_old[i + 1] == '#' && x_older.at(i) == ' ');//
+			m_rules[3] = (x_old[i - 1] == '#' && x_old.at(i) == ' ' && x_old[i + 1] == '#' && x_older.at(i) == '#');
+			m_rules[2] = (x_old[i - 1] == '#' && x_old.at(i) == '#' && x_old[i + 1] == ' ' && x_older.at(i) == '#');
+			m_rules[1] = (x_old[i - 1] == ' ' && x_old.at(i) == '#' && x_old[i + 1] == '#' && x_older.at(i) == '#');
+			m_rules[0] = (x_old[i - 1] == '#' && x_old.at(i) == '#' && x_old[i + 1] == '#' && x_older.at(i) == '#');
 			//loop through each binary digit int he user defined ruleset
 			for (int a = 0; a < 16; a++)
 			{
 				//if binary digit is a 0, dont use rule
 				if (ruleSet.at(a) == '0')
 				{
-					rules[a] = false;
+					m_rules[a] = false;
 				}
-
 			}
 			//check if character in old generate satisfies rule and set character in new array to "alive"
-			if (rules[0] || rules[1] || rules[2] || rules[3] || rules[4] || rules[5] || rules[6] || rules[7]||rules[8] || rules[9] || rules[10] || rules[11] || rules[12] || rules[13] || rules[14] || rules[15])
+			if (m_rules[0] || m_rules[1] || m_rules[2] || m_rules[3] || m_rules[4] || m_rules[5] || m_rules[6] || m_rules[7]||m_rules[8] || m_rules[9] || m_rules[10] || m_rules[11] || m_rules[12] || m_rules[13] || m_rules[14] || m_rules[15])
 			{
 				x.at(i) = '#';
 			}
@@ -264,7 +245,7 @@ void CA::playPattern(vector<int> emotVars) {
 				switch (choice)
 				{
 				case 1:
-					g = UI::showInputMessage(patternWindow, "Enter emotion", "Choose(1-4) 1=happy,2=sad,3=angry,4=fear");
+					g = UI::showInputMessage(patternWindow, "Enter emotion", "Choose(1-4) 1=Joy, 2=Sadness, 3=Anger, 4=Fear/Suspense");
 					if (g == "")
 					{
 						g = to_string(rand() % 4 + 1);
@@ -307,7 +288,6 @@ void CA::playPattern(vector<int> emotVars) {
 				CACurse::mvwprintw(patternTitle, 1, 16, "%s", dispat);
 				CACurse::wrefresh(patternTitle);
 			}
-
 			playNote(i, x.at(i), key, velocity,scale,emot); // checks if cell is alive and plays a note
 
 			//////visualisation for testing, uncomment to see first 15 line of pattern
@@ -317,11 +297,8 @@ void CA::playPattern(vector<int> emotVars) {
 
 			//}
 		}
-
 		napms(speed);
-
 	}
-
 	// turn any MIDI notes currently playing:
 	midiOutReset(device);
 	// Remove any data in MIDI device and close the MIDI Output port
@@ -337,10 +314,10 @@ void CA::playPattern(vector<int> emotVars) {
 }
 void CA::playNote(int i,char x,int startNote, int velocity,int scale,int emot)
 {
-	message.data[0] = 0x90;  // MIDI note-on message (requires to data bytes)
-	message.data[1] = 60;
-	message.data[2] = velocity;   // MIDI note-on message: Key velocity (100 = loud)
-	message.data[3] = 0;     // Unused parameter
+	m_message.data[0] = 0x90;  // MIDI note-on message (requires to data bytes)
+	m_message.data[1] = 60;
+	m_message.data[2] = velocity;   // MIDI note-on message: Key velocity (100 = loud)
+	m_message.data[3] = 0;     // Unused parameter
 
 	if (scale == 0)//setting minor of major scales
 	{
@@ -351,24 +328,24 @@ void CA::playNote(int i,char x,int startNote, int velocity,int scale,int emot)
 	}
 	int keyNote = startNote;
 	//checks if cell is alive then plays midi
-	if (i == startCell && x == '#')
+	if (i == m_startCell && x == '#')
 	{
 		//setting note to play
-		message.data[1] = keyNote;
+		m_message.data[1] = keyNote;
 		//plaing the midi
-		flag = midiOutShortMsg(device, message.word);
+		m_flag = midiOutShortMsg(device, m_message.word);
 	}
 	else {
 		for (int j = 0; j < 7; j++)
 		{
-			if (i == startCell+1 + j && x == '#'&& emot !=2) {
-				message.data[1] = keyNote + key[j];
-				flag = midiOutShortMsg(device, message.word);
+			if (i == m_startCell+1 + j && x == '#'&& emot !=2) {
+				m_message.data[1] = keyNote + key[j];
+				m_flag = midiOutShortMsg(device, m_message.word);
 			}
-			else if (i == startCell+1 + j && x == '#'&& emot == 2 && i % 2==0 )
+			else if (i == m_startCell+1 + j && x == '#'&& emot == 2 && i % 2==0 )
 			{
-				message.data[1] = keyNote + key[j];
-				flag = midiOutShortMsg(device, message.word);
+				m_message.data[1] = keyNote + key[j];
+				m_flag = midiOutShortMsg(device, m_message.word);
 			}
 		}
 	}
@@ -395,22 +372,22 @@ vector<int> CA::emotValues(int emot)
 		int c = 36, cS = 37, d = 38, dS = 39, e = 40, f = 41, fS = 42, g = 43, gS = 44, a = 45, aS = 46, b = 35;// setting lowest octave for all notes, B is one lowest for anger
 	vector<int> emotVars = { 22,1,200,c,0 };//{patternCode,emotion,tempo,key,velocity,major/minor(1/0)}
 
-	if (emot == 1)//happy
+	if (emot == 1)//Joy 
 	{
 		e += 12 * (2);
 		emotVars = { genPattern(),1,rand() % 150 + 150,e,30,1 };
 	}
-	else if (emot == 2)//sad
+	else if (emot == 2)//Sadness
 	{
 		f += 12 * (rand() % 4);
 		emotVars = { genPattern(),2,rand() % 150 + 400,f,30,0 };
 	}
-	else if (emot ==3)//angry
+	else if (emot ==3)//Anger
 	{
 		b += 12 * (rand() % 3);
 		emotVars = { genPattern(),3,rand() % 150 + 100,b,75,1 };
 	}
-	else if (emot == 4)//fear
+	else if (emot == 4)//Fear/Suspense
 	{
 		dS += 12 * (rand() % 5 + 1);
 		emotVars = { genPattern(),4,rand() % 150 + 100,dS,75,0 };
@@ -419,20 +396,15 @@ vector<int> CA::emotValues(int emot)
 	return emotVars;
 
 }
-
-
-
-
 //WIP
 void CA::playdrum(int note)
 {
-
 	messageDrum.data[0] = 0x99;  // MIDI note-on message (requires to data bytes)
 	messageDrum.data[1] = note;    // MIDI note-on message: Key number (60 = middle C)
 	messageDrum.data[2] = 100;   // MIDI note-on message: Key velocity (100 = loud)
 	messageDrum.data[3] = 0;     // Unused parameter
 
 
-	flag = midiOutShortMsg(device, messageDrum.word);
+	m_flag = midiOutShortMsg(device, messageDrum.word);
 
 }

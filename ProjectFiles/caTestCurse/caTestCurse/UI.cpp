@@ -41,7 +41,7 @@ string UI::showInputMessage(WINDOW* parentWindow, string title, string message)
 	CACurse::mvwprintwCentered(win, 6, "CONTINUE");
 	CACurse::wattroff(win, A_BOLD | WA_BLINK);
 
-	CACurse::mvwprintw(win, 1, 2, cMessage);
+	CACurse::mvwprintw(win, 1, 1, cMessage);
 	CACurse::mvwprintw(win, 3, 11, " ");
 	CACurse::wrefresh(win);
 
@@ -81,11 +81,7 @@ void UI::showLargeMessage(WINDOW* parentWindow, string title, string message)
 {
 	WINDOW* win = largeMessageFrame();
 	WINDOW* textArea = derwin(win, 16, 71, 0, 2);
-
-
-
 	StringFormatter::formatString(&message, 71);
-
 
 	char* cTitle = (char*)title.c_str();
 	char* cMessage = (char*)message.c_str();
@@ -195,7 +191,7 @@ bool UI::popUpConfirm(char* choice)
 
 WINDOW* UI::messageFrame()
 {
-	WINDOW *win = CACurse::newwin(9, 50, 16, 20);
+	WINDOW *win = CACurse::newwin(9, 60, 16, 15);
 	CACurse::wbox(win, 0, 0);
 	CACurse::wbkgd(win, A_BOLD | COLOR_PAIR(static_cast<int>(UI::Color::White_Black)));
 
