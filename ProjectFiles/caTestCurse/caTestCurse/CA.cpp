@@ -128,7 +128,7 @@ void CA::playCustom()
 	string speed, patternCustom, key, velocity, scale;
 
 	speed =UI::showInputMessage(mainWindow, "Enter speed", "Please enter speed, 50=fast 250=slow: ");
-	patternCustom =UI::showInputMessage(mainWindow, "Enter Pattern Code", "Please enter pattern number (0-255):");
+	patternCustom =UI::showInputMessage(mainWindow, "Enter Pattern Code", "Please enter pattern number (1-65536):");
 	key =UI::showInputMessage(mainWindow, "Enter Key", "Enter starting Key(24-107) e.g midC=60:");
 	velocity = UI::showInputMessage(mainWindow, "Enter velocity", "Enter velocity(how hard keys are hit)(0-100):");
 	scale = UI::showInputMessage(mainWindow, "Enter Scale", "Major=0 or Minor=1");
@@ -188,7 +188,7 @@ void CA::playPattern(vector<int> emotVars) {
 
 	//seed cell in the middle in "alive" state
 	x.at(nCells/2) = '#';
-
+	
 	//repeat for each row user asked for
 	for (int j = 1; j <= nSteps; j++)
 	{
@@ -205,7 +205,7 @@ void CA::playPattern(vector<int> emotVars) {
 
 		for (int i = 1; i <= nCells; i++)
 		{
-			
+
 			ruleSet = std::bitset<16>(patternCode).to_string();
 
 			//define each possible rule in the neighborhood
@@ -235,7 +235,7 @@ void CA::playPattern(vector<int> emotVars) {
 				}
 			}
 			//check if character in old generate satisfies rule and set character in new array to "alive"
-			if (m_rules[0] || m_rules[1] || m_rules[2] || m_rules[3] || m_rules[4] || m_rules[5] || m_rules[6] || m_rules[7]||m_rules[8] || m_rules[9] || m_rules[10] || m_rules[11] || m_rules[12] || m_rules[13] || m_rules[14] || m_rules[15])
+			if (m_rules[0] || m_rules[1] || m_rules[2] || m_rules[3] || m_rules[4] || m_rules[5] || m_rules[6] || m_rules[7] || m_rules[8] || m_rules[9] || m_rules[10] || m_rules[11] || m_rules[12] || m_rules[13] || m_rules[14] || m_rules[15])
 			{
 				x.at(i) = '#';
 			}
@@ -245,6 +245,12 @@ void CA::playPattern(vector<int> emotVars) {
 				x.at(i) = ' ';
 			}
 
+
+			//////visualisation for testing, uncomment to see first 15 line of pattern
+			if (i >= m_startCell &&i <= m_startCell + 7&& j<15)
+			{
+			CACurse::mvwprintw(patternWindow, j, i, "%c", x.at(i));
+			}
 			 //if key is pressed, end pattern loop
 			if (CACurse::wgetch(patternWindow) != ERR  && CACurse::wgetch(patternWindow) != 10)
 			{
@@ -262,12 +268,14 @@ void CA::playPattern(vector<int> emotVars) {
 					emot = stoi(inputEmot);
 					emotVars=emotValues(emot);
 					patternCode = emotVars[0], speed = emotVars[2], key = emotVars[3], velocity = emotVars[4], scale = emotVars[5];
+					j = 1;
 					nSteps += 100;
 					break;
 
 				case 2:
 					UI::showMessage(patternWindow, "Change pattern Code", "Change pattern Code ");
 					patternCode = genPattern();
+					j = 1;
 					break;
 
 				case 3:
@@ -289,6 +297,7 @@ void CA::playPattern(vector<int> emotVars) {
 			if ((std::adjacent_find(check1.begin(), check1.end(), std::not_equal_to<string>()) == check1.end()) || (check1 == check2))
 			{
 				patternCode = genPattern();
+				j = 1;
 				//redraw window to clear popups
 				disppp = to_string(patternCode);
 				dispat = disppp.c_str();
@@ -301,12 +310,8 @@ void CA::playPattern(vector<int> emotVars) {
 			playNote(i, x.at(i), key, velocity,scale,emot); // checks if cell is alive and plays a note
 			x.at(0) = x.at(nCells);
 			x.at(nCells + 1) = x.at(1);
-			//////visualisation for testing, uncomment to see first 15 line of pattern
-			//for (int i = 1; i <= nCells; i++)
-			//{
-			//	CACurse::mvwprintw(patternWindow, j + 1, i, "%c", x[i]);
+			
 
-			//}
 		}
 		napms(speed);
 	}
@@ -437,5 +442,9 @@ const char * CA::displayedEmot(int emot)
 	else if (emot == 4)
 	{
 		return "Fear/Suspense";
+	}
+	else if (emot == 5)
+	{
+		return "Custom";
 	}
 }
