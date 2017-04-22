@@ -45,7 +45,7 @@ string UI::showInputMessage(WINDOW* parentWindow, string title, string message)
 	CACurse::mvwprintw(win, 3, 11, " ");
 	CACurse::wrefresh(win);
 
-	WINDOW *inputBox = CACurse::newwin(3, 30, 18, 30);
+	WINDOW *inputBox = CACurse::newwin(3, 40, 18, 25);
 	CACurse::wbox(inputBox, 0, 0);
 	CACurse::wrefresh(inputBox);
 

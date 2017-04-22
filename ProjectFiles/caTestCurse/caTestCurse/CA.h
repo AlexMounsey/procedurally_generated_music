@@ -36,7 +36,7 @@ private:
 	int key[7] = { 2,4,5,7,9,11,12 };
 	const int Mj[7] = { 2,4,5,7,9,11,12};		//positions of major
 	const int Mn[7] = {2,3,5,7,8,11,12};		//positions of minor
-	const int m_lvlOfCheck = 5;
+	const int m_lvlOfCheck = 4;
 	const int m_startCell = 45;
 	bool m_rules[15]; //array of possible neighbor configurations
 public:
@@ -55,6 +55,7 @@ public:
 	void exit();
 	bool monitor(int i, char x, char xOld);
 	void playdrum(int note);
+	const char * displayedEmot(int emot);
 	int displayChangeMenu();
 	int genPattern();
 	vector<int> emotValues(int emot);

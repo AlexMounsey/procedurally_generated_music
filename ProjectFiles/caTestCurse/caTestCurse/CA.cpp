@@ -113,7 +113,14 @@ void CA::playEmot()
 	int emot;
 	/*string binary = std::bitset<8>(stoi(patternCode)).to_string();
 	char *ruleSet = (char*)binary.c_str();*/
-	emot = stoi(UI::showInputMessage(mainWindow, "Enter emotion", "Choose(1-4) 1=Joy, 2=Sadness, 3=Anger, 4=Fear/Suspense"));
+	string inputEmot;
+	inputEmot = UI::showInputMessage(mainWindow, "Enter emotion", "Choose(1-4) 1=Joy, 2=Sadness, 3=Anger, 4=Fear/Suspense");
+	if (inputEmot == "")
+	{
+		UI::showMessage(mainWindow, "error", "Parameter missing, choosing random");
+		inputEmot = to_string(rand() % 4 + 1);
+	}
+	emot = stoi(inputEmot);
 	playPattern(CA::emotValues(emot));
 }
 void CA::playCustom()
@@ -170,6 +177,7 @@ void CA::playPattern(vector<int> emotVars) {
 	//title box that displays the code# and ruleset of the current pattern
 	WINDOW* patternTitle = UI::titleBox();
 	CACurse::mvwprintw(patternTitle, 1, 16, "%s", dispat);
+	CACurse::mvwprintw(patternTitle, 2, 16, "%s", displayedEmot(emot));
 	CACurse::wrefresh(patternTitle);
 	//window the pattern is displayed inside
 	WINDOW* patternWindow = CACurse::newwin(LINES - 25, COLS - 4, 8, (COLS / 2) - ((COLS - 4) / 2));
@@ -241,17 +249,17 @@ void CA::playPattern(vector<int> emotVars) {
 			if (CACurse::wgetch(patternWindow) != ERR  && CACurse::wgetch(patternWindow) != 10)
 			{
 				choice = displayChangeMenu();
-				string g;
+				string inputEmot;
 				switch (choice)
 				{
 				case 1:
-					g = UI::showInputMessage(patternWindow, "Enter emotion", "Choose(1-4) 1=Joy, 2=Sadness, 3=Anger, 4=Fear/Suspense");
-					if (g == "")
+					inputEmot = UI::showInputMessage(patternWindow, "Enter emotion", "Choose(1-4) 1=Joy, 2=Sadness, 3=Anger, 4=Fear/Suspense");
+
+					if (inputEmot == "")
 					{
-						g = to_string(rand() % 4 + 1);
+						inputEmot = to_string(rand() % 4 + 1);
 					}
-					emot = stoi(g);
-					
+					emot = stoi(inputEmot);
 					emotVars=emotValues(emot);
 					patternCode = emotVars[0], speed = emotVars[2], key = emotVars[3], velocity = emotVars[4], scale = emotVars[5];
 					nSteps += 100;
@@ -274,6 +282,7 @@ void CA::playPattern(vector<int> emotVars) {
 				CACurse::resize_term(40, 90);
 				patternTitle = UI::titleBox();
 				CACurse::mvwprintw(patternTitle, 1, 16, "%s", dispat);
+				CACurse::mvwprintw(patternTitle, 2, 16, "%s", displayedEmot(emot));
 				CACurse::wrefresh(patternTitle);
 			}
 
@@ -286,10 +295,12 @@ void CA::playPattern(vector<int> emotVars) {
 				CACurse::resize_term(40, 90);
 				patternTitle = UI::titleBox();
 				CACurse::mvwprintw(patternTitle, 1, 16, "%s", dispat);
+				CACurse::mvwprintw(patternTitle, 2, 16, "%s", displayedEmot(emot));
 				CACurse::wrefresh(patternTitle);
 			}
 			playNote(i, x.at(i), key, velocity,scale,emot); // checks if cell is alive and plays a note
-
+			x.at(0) = x.at(nCells);
+			x.at(nCells + 1) = x.at(1);
 			//////visualisation for testing, uncomment to see first 15 line of pattern
 			//for (int i = 1; i <= nCells; i++)
 			//{
@@ -407,4 +418,24 @@ void CA::playdrum(int note)
 
 	m_flag = midiOutShortMsg(device, messageDrum.word);
 
+}
+
+const char * CA::displayedEmot(int emot)
+{
+	if (emot == 1)
+	{
+		return "Joy";
+	}
+	else if (emot == 2)
+	{
+		return "Sadness";
+	}
+	else if (emot == 3)
+	{
+		return "Anger";
+	}
+	else if (emot == 4)
+	{
+		return "Fear/Suspense";
+	}
 }
