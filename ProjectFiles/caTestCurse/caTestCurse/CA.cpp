@@ -131,9 +131,9 @@ void CA::playCustom()
 	patternCustom =UI::showInputMessage(mainWindow, "Enter Pattern Code", "Please enter pattern number (1-65536):");
 	key =UI::showInputMessage(mainWindow, "Enter Key", "Enter starting Key(24-107) e.g midC=60:");
 	velocity = UI::showInputMessage(mainWindow, "Enter velocity", "Enter velocity(how hard keys are hit)(0-100):");
-	scale = UI::showInputMessage(mainWindow, "Enter Scale", "Major=0 or Minor=1");
+	scale = UI::showInputMessage(mainWindow, "Enter Scale", "Major=1 or Minor=0");
 
-	if (patternCustom == "" || speed == "" || key == "" || velocity == ""  || scale == "")
+	if (patternCustom == "" || speed == "" || key == "" || velocity == ""  || scale == "")//if empty
 	{
 		UI::showMessage(mainWindow, "error", "Parameter missing, using defaults");
 		speed = "500";
@@ -246,27 +246,28 @@ void CA::playPattern(vector<int> emotVars) {
 			}
 
 
-			//////visualisation for testing, uncomment to see first 15 line of pattern
-			if (i >= m_startCell &&i <= m_startCell + 7&& j<15)
-			{
-			CACurse::mvwprintw(patternWindow, j, i, "%c", x.at(i));
-			}
-			 //if key is pressed, end pattern loop
+			////////visualisation for testing, uncomment to see first 15 line of pattern
+			//if (i >= m_startCell -1 &&i <= m_startCell + 7&& j<15)
+			//{
+			//CACurse::mvwprintw(patternWindow, j, i, "%c", x.at(i));
+			//}
+
+			 //if key is pressed,menu pop up
 			if (CACurse::wgetch(patternWindow) != ERR  && CACurse::wgetch(patternWindow) != 10)
 			{
-				choice = displayChangeMenu();
+				choice = displayChangeMenu();//handles menun choice
 				string inputEmot;
+				string inputSpeed;
 				switch (choice)
 				{
 				case 1:
 					inputEmot = UI::showInputMessage(patternWindow, "Enter emotion", "Choose(1-4) 1=Joy, 2=Sadness, 3=Anger, 4=Fear/Suspense");
-
 					if (inputEmot == "")
 					{
 						inputEmot = to_string(rand() % 4 + 1);
 					}
 					emot = stoi(inputEmot);
-					emotVars=emotValues(emot);
+					emotVars = emotValues(emot);
 					patternCode = emotVars[0], speed = emotVars[2], key = emotVars[3], velocity = emotVars[4], scale = emotVars[5];
 					j = 1;
 					nSteps += 100;
@@ -279,6 +280,18 @@ void CA::playPattern(vector<int> emotVars) {
 					break;
 
 				case 3:
+					inputSpeed = UI::showInputMessage(patternWindow, "Change speed", "Please enter speed, 50 = fast 250 = slow: ");
+					if (inputSpeed == "")
+					{
+						speed = speed;//do nothing
+					}
+					else {
+
+					speed = stoi(inputSpeed);
+					}
+					break;
+
+				case 4:
 					nSteps = 10;
 					break;
 				}
@@ -307,9 +320,9 @@ void CA::playPattern(vector<int> emotVars) {
 				CACurse::mvwprintw(patternTitle, 2, 16, "%s", displayedEmot(emot));
 				CACurse::wrefresh(patternTitle);
 			}
-			playNote(i, x.at(i), key, velocity,scale,emot); // checks if cell is alive and plays a note
-			x.at(0) = x.at(nCells);
-			x.at(nCells + 1) = x.at(1);
+
+			playNote(i, x.at(i), key, velocity, scale, emot); // checks if cell is alive and plays a note
+
 			
 
 		}
@@ -344,7 +357,7 @@ void CA::playNote(int i,char x,int startNote, int velocity,int scale,int emot)
 	}
 	int keyNote = startNote;
 	//checks if cell is alive then plays midi
-	if (i == m_startCell && x == '#')
+	if (i == m_startCell && x == '#') //first note in scale
 	{
 		//setting note to play
 		m_message.data[1] = keyNote;
@@ -352,7 +365,7 @@ void CA::playNote(int i,char x,int startNote, int velocity,int scale,int emot)
 		m_flag = midiOutShortMsg(device, m_message.word);
 	}
 	else {
-		for (int j = 0; j < 7; j++)
+		for (int j = 0; j < 7; j++)//every other note scaled correctly
 		{
 			if (i == m_startCell+1 + j && x == '#'&& emot !=2) {
 				m_message.data[1] = keyNote + key[j];
@@ -368,14 +381,15 @@ void CA::playNote(int i,char x,int startNote, int velocity,int scale,int emot)
 }
 int CA::displayChangeMenu()
 {
-	char *menuItems[] = { "Change Emotion", "Change CA Pattern", "Exit"};
+	char *menuItems[] = { "Change Emotion", "Change CA Pattern","Change speed", "Exit"};
 	int choice = 0;
-	choice = UI::showChoicesMenu("Changes", menuItems, 3);
+	choice = UI::showChoicesMenu("Changes", menuItems, 4);
 	CACurse::wrefresh(mainWindow);
 	return choice;
 }
 int CA::genPattern()
 {
+	//rand() not good enough
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<int> dis(0, 65535);
